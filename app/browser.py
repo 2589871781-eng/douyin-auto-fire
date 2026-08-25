@@ -77,10 +77,22 @@ async def open_douyin(settings: Settings) -> AsyncIterator[BrowserSession]:
     context: BrowserContext | None = None
     try:
         playwright = await async_playwright().start()
-        launch_args = {"headless": settings.headless}
+        if settings.headless:
+            headless_value = "new"
+        else:
+            headless_value = False
+
+        launch_args = {
+            "headless": headless_value,
+            "args": [
+                "--disable-blink-features=AutomationControlled",
+                "--start-maximized"
+            ]
+        }
         if settings.browser_path:
             launch_args["executable_path"] = settings.browser_path
         browser = await playwright.chromium.launch(**launch_args)
+
 
         context_args = {"viewport": {"width": 1440, "height": 1000}, "locale": "zh-CN"}
         if settings.storage_state:
@@ -89,6 +101,12 @@ async def open_douyin(settings: Settings) -> AsyncIterator[BrowserSession]:
                 raise ConfigError("DOUYIN_STORAGE_STATE 必须是 JSON 对象")
             context_args["storage_state"] = state
         context = await browser.new_context(**context_args)
+        await context.add_init_script("""
+            Object.defineProperty(navigator, 'webdriver', {
+                get: () => undefined
+            });
+        """)
+
         if not settings.storage_state and settings.cookie:
             cookies = parse_auth_json(settings.cookie, "DOUYIN_COOKIE")
             if not isinstance(cookies, list):
