@@ -26,7 +26,7 @@ jobs:
       DOUYIN_CONFIG: ${{ secrets.DOUYIN_CONFIG }}
       DINGTALK_WEBHOOK: ${{ secrets.DINGTALK_WEBHOOK }}
       DINGTALK_SECRET: ${{ secrets.DINGTALK_SECRET }}
-      HEADLESS: "new"
+      HEADLESS: "ture "
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
